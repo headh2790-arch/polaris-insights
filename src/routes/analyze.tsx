@@ -182,7 +182,7 @@ function AnalyzePage() {
                 <StatLine label="Debate triggered" value={result.debate_triggered ? "Yes" : "No"} />
               </div>
               <button
-                onClick={() => navigate({ to: "/", search: {} })}
+                onClick={() => navigate({ to: "/" })}
                 className="rounded-lg border border-primary/35 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/12"
               >
                 Open dashboard
