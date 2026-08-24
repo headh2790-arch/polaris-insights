@@ -187,7 +187,12 @@ export default function IndiaMapClient({
         zoomControl={false}
         scrollWheelZoom
         attributionControl={false}
-        style={{ height: "clamp(380px, 58vh, 620px)", width: "100%" }}
+        style={{
+          height: "clamp(380px, 58vh, 620px)",
+          width: "100%",
+          background: "transparent",
+        }}
+
       >
         <ZoomControl position="bottomright" />
         <GeoJSON
