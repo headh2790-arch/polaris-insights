@@ -109,9 +109,11 @@ export default function IndiaMapClient({
       mouseover: () => setHovered(name),
       mouseout: () => setHovered((h) => (h === name ? null : h)),
       click: () => onSelectState(name),
-      keydown: (e: LeafletMouseEvent & { originalEvent: KeyboardEvent }) => {
-        if (e.originalEvent.key === "Enter") onSelectState(name);
+      keypress: (e) => {
+        if ((e as unknown as { originalEvent: KeyboardEvent }).originalEvent.key === "Enter")
+          onSelectState(name);
       },
+
     });
   };
 
