@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Legend,
   Line,
@@ -13,9 +11,9 @@ import {
   YAxis,
 } from "recharts";
 import { AppShell } from "@/components/layout/AppShell";
-import { ErrorBlock, LoadingBlock, Panel, StatLine } from "@/components/polaris/primitives";
-import { backtestQuery } from "@/lib/api/queries";
-import { chartTooltipStyle } from "@/lib/chart-theme";
+import { Chip, ErrorBlock, LoadingBlock, Panel, StatLine } from "@/components/polaris/primitives";
+import { backtestsQuery } from "@/lib/api/queries";
+import type { BacktestRecord } from "@/types/polaris";
 
 export const Route = createFileRoute("/backtesting")({
   head: () => ({
@@ -36,101 +34,99 @@ export const Route = createFileRoute("/backtesting")({
   component: BacktestingPage,
 });
 
+const TOOLTIP = {
+  background: "var(--color-popover)",
+  border: "1px solid var(--color-border)",
+  borderRadius: 12,
+  fontSize: 12,
+} as const;
+
+const STATUS_TONE: Record<BacktestRecord["status"], "primary" | "warning" | "danger"> = {
+  pass: "primary",
+  warn: "warning",
+  fail: "danger",
+};
+
+function BacktestCard({ record }: { record: BacktestRecord }) {
+  return (
+    <Panel
+      eyebrow={record.kind === "quantitative" ? "Quantitative model" : "Retrieval / LLM"}
+      title={record.name}
+      description={record.target}
+      action={<Chip tone={STATUS_TONE[record.status]}>{record.status.toUpperCase()}</Chip>}
+    >
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
+        <div>
+          <StatLine label="Period" value={record.period} />
+          <StatLine
+            label="Last run"
+            value={new Date(record.run_date).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+          />
+          {record.metrics.map((m) => (
+            <StatLine key={m.label} label={m.label} value={m.value} />
+          ))}
+        </div>
+        {record.series ? (
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={record.series}>
+                <CartesianGrid stroke="var(--color-border)" vertical={false} />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} width={38} />
+                <Tooltip contentStyle={TOOLTIP} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Line
+                  type="monotone"
+                  dataKey="actual"
+                  name="Realised"
+                  stroke="var(--color-chart-2)"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="predicted"
+                  name="Predicted"
+                  stroke="var(--color-primary)"
+                  strokeWidth={2}
+                  strokeDasharray="5 4"
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            This validation reports metric-level results only; no time series is produced because the
+            evaluation is scored per generated answer rather than per period.
+          </p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
 function BacktestingPage() {
-  const backtest = useQuery(backtestQuery());
+  const backtests = useQuery(backtestsQuery());
 
   return (
     <AppShell
       title="Backtesting"
-      subtitle="Honest accuracy reporting: predicted effects compared with realised outcomes on held-out periods."
+      subtitle="Honest accuracy reporting: model predictions and retrieval grounding scored on held-out data."
     >
-      {backtest.isPending && (
+      {backtests.isPending && (
         <Panel title="Loading validation results">
           <LoadingBlock rows={4} />
         </Panel>
       )}
-      {backtest.isError && (
+      {backtests.isError && (
         <Panel title="Validation results">
-          <ErrorBlock onRetry={() => backtest.refetch()} />
+          <ErrorBlock onRetry={() => backtests.refetch()} />
         </Panel>
       )}
-
-      {backtest.data && (
-        <>
-          <div className="grid gap-6 lg:grid-cols-4">
-            {backtest.data.metrics.map((m) => (
-              <Panel key={m.label} title={m.label} eyebrow="Metric">
-                <p className="num text-3xl font-semibold text-primary">{m.value}</p>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{m.description}</p>
-              </Panel>
-            ))}
-          </div>
-
-          <Panel
-            eyebrow="Quantitative"
-            title="Predicted vs realised EV adoption effect"
-            description="Held-out state-year cells. Closer lines indicate better calibration."
-          >
-            <div className="h-[320px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={backtest.data.predicted_vs_actual}>
-                  <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="4 4" />
-                  <XAxis dataKey="label" stroke="var(--chart-axis)" fontSize={12} />
-                  <YAxis stroke="var(--chart-axis)" fontSize={12} />
-                  <Tooltip {...chartTooltipStyle} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line
-                    type="monotone"
-                    dataKey="predicted"
-                    name="Predicted"
-                    stroke="var(--chart-1)"
-                    strokeWidth={2.5}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="actual"
-                    name="Realised"
-                    stroke="var(--chart-3)"
-                    strokeWidth={2.5}
-                    strokeDasharray="5 4"
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Panel>
-
-          <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-            <Panel
-              eyebrow="Retrieval"
-              title="Grounding quality by source type"
-              description="Share of generated claims that map to a retrieved passage."
-            >
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={backtest.data.grounding}>
-                    <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="4 4" vertical={false} />
-                    <XAxis dataKey="source_type" stroke="var(--chart-axis)" fontSize={12} />
-                    <YAxis stroke="var(--chart-axis)" fontSize={12} unit="%" />
-                    <Tooltip {...chartTooltipStyle} />
-                    <Bar dataKey="grounded_pct" name="Grounded %" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Panel>
-            <Panel eyebrow="Protocol" title="How validation is run">
-              <StatLine label="Design" value={backtest.data.protocol.design} />
-              <StatLine label="Holdout" value={backtest.data.protocol.holdout} />
-              <StatLine label="Units" value={backtest.data.protocol.units} />
-              <StatLine label="Refresh" value={backtest.data.protocol.refresh} />
-              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                {backtest.data.protocol.caveat}
-              </p>
-            </Panel>
-          </div>
-        </>
-      )}
+      {(backtests.data ?? []).map((record) => (
+        <BacktestCard key={record.id} record={record} />
+      ))}
     </AppShell>
   );
 }
