@@ -15,10 +15,10 @@ export function KpiCard({
 }: {
   label: string;
   value: string;
-  unit?: string;
-  sub?: string;
-  tone?: "neutral" | "primary" | "positive" | "warning" | "danger";
-  icon?: ReactNode;
+  unit?: string | undefined;
+  sub?: string | undefined;
+  tone?: "neutral" | "primary" | "positive" | "warning" | "danger" | undefined;
+  icon?: ReactNode | undefined;
 }) {
   const valueTone: Record<string, string> = {
     neutral: "text-foreground",

@@ -11,12 +11,12 @@ export function Panel({
   bodyClassName,
   children,
 }: {
-  title?: string;
-  eyebrow?: string;
-  description?: string;
-  action?: ReactNode;
-  className?: string;
-  bodyClassName?: string;
+  title?: string | undefined;
+  eyebrow?: string | undefined;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
+  className?: string | undefined;
+  bodyClassName?: string | undefined;
   children: ReactNode;
 }) {
   return (
@@ -44,8 +44,8 @@ export function Chip({
   className,
 }: {
   children: ReactNode;
-  tone?: "neutral" | "primary" | "positive" | "warning" | "danger";
-  className?: string;
+  tone?: "neutral" | "primary" | "positive" | "warning" | "danger" | undefined;
+  className?: string | undefined;
 }) {
   const tones: Record<string, string> = {
     neutral: "border-border bg-secondary/60 text-muted-foreground",
