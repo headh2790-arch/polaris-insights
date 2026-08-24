@@ -187,13 +187,14 @@ export default function IndiaMapClient({
         zoomControl={false}
         scrollWheelZoom
         attributionControl={false}
+        className="rounded-xl border border-border"
         style={{
           height: "clamp(380px, 58vh, 620px)",
           width: "100%",
-          background: "transparent",
+          background: "var(--color-background)",
         }}
-
       >
+
         <ZoomControl position="bottomright" />
         <GeoJSON
           key={`${selectedState ?? "none"}-${hovered ?? "none"}-${min}-${max}`}
