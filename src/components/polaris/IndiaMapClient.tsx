@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GeoJSON, MapContainer, ZoomControl } from "react-leaflet";
-import type { Layer, LeafletMouseEvent, Map as LeafletMap, PathOptions } from "leaflet";
+import type { Layer, Map as LeafletMap, PathOptions } from "leaflet";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import "leaflet/dist/leaflet.css";
 import { Search } from "lucide-react";
