@@ -209,3 +209,23 @@
 .leaflet-control-attribution {
   display: none;
 }
+
+.leaflet-container {
+  background: transparent;
+  font-family: inherit;
+  outline: none;
+}
+
+.leaflet-control-zoom a {
+  background: var(--color-surface-raised);
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--color-secondary);
+}
+
+.leaflet-control-attribution {
+  display: none;
+}
